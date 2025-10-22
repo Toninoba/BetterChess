@@ -3,4 +3,8 @@ project(BetterChess)
 
 set(CMAKE_CXX_STANDARD 26)
 
-add_executable(BetterChess main.cpp)
+add_executable(BetterChess main.cpp
+        board/Board.cpp
+        board/Board.h
+        pieces/Piece.cpp
+        pieces/Piece.h)
