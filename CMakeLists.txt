@@ -3,8 +3,21 @@ project(BetterChess)
 
 set(CMAKE_CXX_STANDARD 26)
 
-add_executable(BetterChess main.cpp
+add_library(Board
         board/Board.cpp
-        board/Board.h
+        board/boardEnum.cpp
+        board/FenParser.cpp
+        board/FenParser.h
+)
+
+target_include_directories(Board PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/board
+)
+
+add_executable(BetterChess
+        main.cpp
         pieces/Piece.cpp
-        pieces/Piece.h)
+        moveGen/MoveLogic.cpp
+)
+
+target_link_libraries(BetterChess Board)
