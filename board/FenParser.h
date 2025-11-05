@@ -28,7 +28,7 @@ public:
         std::cout << board << std::endl;
     }
 private:
-    static void parseBoardLine(Board& board, std::string& line, int& boardPos) {
+    static void parseBoardLine(Board& board, std::string& line, int boardPos) {
         for (const char piece : line) {
             Piece::TYPE type = Piece::PAWN;
             int color = 0;
