@@ -16,17 +16,17 @@ struct Move {
 
 class MoveLogic {
 public:
-    void performMove(Board& board, const Move& move) const {
+    static void performMove(Board& board, const Move& move) {
 
     }
 
-    void undoMove(Board& board, const Move& move) const {
+    static void undoMove(Board& board, const Move& move) {
 
     }
 
 
 private:
-    std::vector<Move> _moveStack;
+    static std::vector<Move> _moveStack;
 };
 
 

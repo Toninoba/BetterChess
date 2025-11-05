@@ -31,7 +31,7 @@ public:
 
     }
 
-    void setPieceBoard(const int idx, const Piece::TYPE pieceType) {
+    void setPieceBoard(const int idx, const int pieceType) {
         _board[idx] = pieceType;
     }
 
@@ -46,6 +46,7 @@ public:
         else {
             _blackPieces.push_back(piece);
         }
+        setPieceBoard(piece.getPosition(), piece.getType() * piece.getColor());
     }
 
     void removePiece(const Piece& piece) {
