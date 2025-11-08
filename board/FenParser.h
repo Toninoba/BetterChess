@@ -13,21 +13,72 @@
 class FenParser {
 public:
     static void parseFen(Board& board, std::string& fen) {
+
+        std::istringstream iss(fen);
+
+        std::string boardPart;
+        std::string turn;
+        std::string castling;
+        std::string enPassant;
+        std::string halfmove;
+        std::string fullmove;
+
+        iss >> boardPart >> turn >> castling >> enPassant >> halfmove >> fullmove;
+
         int startPos = A8;
 
         const auto lineRegex = std::regex("[^/]+");
         std::smatch m;
 
-        for (std::sregex_iterator it(fen.begin(), fen.end(), lineRegex), end; it != end; ++it) {
+        for (std::sregex_iterator it(boardPart.begin(), boardPart.end(), lineRegex), end; it != end; ++it) {
             std::string line = it->str();
 
             parseBoardLine(board, line, startPos);
             startPos -= 10;
         }
 
+        if (turn == "w") board.setTurnToMove(Piece::WHITE);
+        else if (turn == "b") board.setTurnToMove(Piece::BLACK);
+        else throw std::runtime_error("Invalid FEN");
+
+        parseCastlingRights(board, castling);
+        parseEnPassant(board, enPassant);
+
+        if (!halfmove.empty()) board.setHalfMoveClock(std::stoi(halfmove));
+        if (!fullmove.empty()) board.setFullMoveCounter(std::stoi(fullmove));
+
+
         std::cout << board << std::endl;
+        std::cout << board.getTurnToMove() << std::endl;
     }
 private:
+    static void parseEnPassant(Board& board, std::string& enPassant) {
+        if (enPassant != "-") {
+            int epFile = enPassant[0] - 'a';
+            int epRank = enPassant[1] - '1';
+
+            int pos = epRank * 10 + 21 + epFile;
+
+            board.setEnPassant(pos);
+        }
+    }
+
+    static void parseCastlingRights(Board& board, std::string& castlingRights) {
+        board.clearCastlingRights();
+        if (castlingRights != "-") {
+            for (char c : castlingRights) {
+                switch (c) {
+                    case 'K': board.whiteKingCastling = true; break;
+                    case 'Q': board.whiteQueenCastling = true; break;
+                    case 'k': board.blackKingCastling = true; break;
+                    case 'q': board.blackQueenCastling = true; break;
+                    default: throw std::runtime_error("Invalid FEN");
+                }
+            }
+        }
+    }
+
+
     static void parseBoardLine(Board& board, std::string& line, int boardPos) {
         for (const char piece : line) {
             Piece::TYPE type = Piece::PAWN;
@@ -98,6 +149,8 @@ private:
                 boardPos++;
             }
         }
+
+
     }
 };
 

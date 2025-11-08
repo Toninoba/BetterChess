@@ -23,7 +23,7 @@ public:
     static constexpr int WHITE = 1;
     static constexpr int BLACK = -1;
 
-    Piece(const TYPE type, const int color, const int pos) : _type(type), _color(color), _position(pos){}
+    Piece(const TYPE type, const int color, const int pos) : _type(type), _color(color), _position(pos), _alive(true){}
 
     [[nodiscard]] int getColor() const {
         return _color;
@@ -37,6 +37,16 @@ public:
         return _position;
     }
 
+    void setAlive(const bool status) {
+        _alive = status;
+    }
+
+    [[nodiscard]] bool isAlive() const {
+        return _alive;
+    }
+
+
+
     bool operator==(const Piece &other) const {
         return getType() == other.getType() &&
                 getColor() == other.getColor() &&
@@ -49,6 +59,7 @@ private:
     int _type;
     int _color;
     int _position;
+    bool _alive;
 };
 
 

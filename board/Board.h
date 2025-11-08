@@ -20,11 +20,16 @@ public:
     static constexpr int EMPTY = 0;
     static constexpr int OUTSIDE = 9;
 
+    bool blackKingCastling;
+    bool blackQueenCastling;
+    bool whiteKingCastling;
+    bool whiteQueenCastling;
 
-    Board() : _halfMoveCount(0), _fullMoveCount(0), _turnToMove(Piece::WHITE),
+
+    Board() : _halfMoveClock(0), _fullMoveCount(0), _turnToMove(Piece::WHITE),
                 _stalemate(false), _checkmate(false),
-                _blackKingCastling(true), _blackQueenCastling(true),
-                _whiteKingCastling(true), _whiteQueenCastling(true) {
+                blackKingCastling(true), blackQueenCastling(true),
+                whiteKingCastling(true), whiteQueenCastling(true) {
 
         _whitePieces.reserve(16);
         _blackPieces.reserve(16);
@@ -77,6 +82,43 @@ public:
         return _board[i];
     }
 
+    void setTurnToMove(const int color) {
+        _turnToMove = color;
+    }
+
+    [[nodiscard]] int getTurnToMove() const {
+        return _turnToMove;
+    }
+
+    void setEnPassant(const int pos) {
+        _enPassantPos = pos;
+    }
+
+    void clearCastlingRights() {
+        blackKingCastling = false;
+        blackQueenCastling = false;
+        whiteKingCastling = false;
+        whiteQueenCastling = false;
+    }
+
+    [[nodiscard]] int getHalfMoveClock() const {
+        return _halfMoveClock;
+    }
+
+    void setHalfMoveClock(const int clock) {
+        _halfMoveClock = clock;
+    }
+
+    [[nodiscard]] int getFullMoveCounter() const {
+        return _fullMoveCount;
+    }
+
+    void setFullMoveCounter(const int counter) {
+        _fullMoveCount = counter;
+    }
+
+
+
 
     friend std::ostream& operator<< (std::ostream& stream, const Board& board);
 
@@ -100,17 +142,17 @@ private:
     std::vector<Piece> _whitePieces;
     std::vector<Piece> _blackPieces;
 
-    int _halfMoveCount;
+    int _halfMoveClock;
     int _fullMoveCount;
     int _turnToMove;
+
+    // Describes the position of the piece that can be enpassanted
+    int _enPassantPos;
 
     bool _stalemate;
     bool _checkmate;
 
-    bool _blackKingCastling;
-    bool _blackQueenCastling;
-    bool _whiteKingCastling;
-    bool _whiteQueenCastling;
+
 
 
 

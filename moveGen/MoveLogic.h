@@ -11,7 +11,13 @@
 struct Move {
     int from;
     int to;
-    Piece::TYPE type;
+    Piece* movedPiece;
+    Piece* capturedPiece;
+    bool isCapture = false;
+    bool isPromotion = false;
+    Piece::TYPE promotionType;
+    bool isCastle = false;
+    bool isEnPassant = false;
 };
 
 class MoveLogic {
@@ -26,7 +32,7 @@ public:
 
 
 private:
-    static std::vector<Move> _moveStack;
+    static std::vector<Move> _moveHistory;
 };
 
 
