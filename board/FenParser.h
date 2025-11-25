@@ -46,10 +46,6 @@ public:
 
         if (!halfmove.empty()) board.setHalfMoveClock(std::stoi(halfmove));
         if (!fullmove.empty()) board.setFullMoveCounter(std::stoi(fullmove));
-
-
-        std::cout << board << std::endl;
-        std::cout << board.getTurnToMove() << std::endl;
     }
 private:
     static void parseEnPassant(Board& board, std::string& enPassant) {

@@ -2,19 +2,30 @@
 
 #include "Board.h"
 #include "FenParser.h"
+#include "moveGen/MoveLogic.h"
 
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
     Board board;
 
-    std::string fen = "r1bk3r/p2pBpNp/n4n2/1p1NP2P/6P1/3P4/P1P1K3/q5b1 w KQ e3 0 1";
+    std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     FenParser::parseFen(board, fen);
 
+    std::cout << board << std::endl;
+    std::cout << board.getTurnToMove() << std::endl;
+    std::cout << board.getPieceFromList(E2)->getPosition() << std::endl;
 
+    Move move(E2, E3, board.getPieceFromList(E2), nullptr,
+        false, false, Piece::PAWN, false, false);
 
-    board.removePiece({Piece::BISHOP, Piece::BLACK, A5});
+    MoveLogic::performMove(board, move);
+
+    std::cout << board << std::endl;
+    std::cout << board.getTurnToMove() << std::endl;
+    std::cout << board.getPieceFromList(E3)->getPosition() << std::endl;
+
 
 
     return 0;

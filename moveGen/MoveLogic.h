@@ -13,7 +13,6 @@ struct Move {
     int to;
     Piece* movedPiece;
     Piece* capturedPiece;
-    bool isCapture = false;
     bool isPromotion = false;
     Piece::TYPE promotionType;
     bool isCastle = false;
@@ -22,17 +21,20 @@ struct Move {
 
 class MoveLogic {
 public:
-    static void performMove(Board& board, const Move& move) {
+    static void performMove(Board& board, const Move& move);
 
-    }
-
-    static void undoMove(Board& board, const Move& move) {
-
-    }
-
+    static void undoLastMove(Board& board);
 
 private:
     static std::vector<Move> _moveHistory;
+
+    static void performPromotion(Board& board, const Move& move);
+    static void performCastling(Board& board, const Move& move);
+    static void performEnPassant(Board& board, const Move& move);
+
+    static void undoPromotion(Board& board, const Move& move);
+    static void undoCastling(Board& board, const Move& move);
+    static void undoEnPassant(Board& board, const Move& move);
 };
 
 

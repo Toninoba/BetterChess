@@ -12,7 +12,9 @@
 #include "../pieces/Piece.h"
 #include "boardEnum.cpp"
 
-
+constexpr int sgn(const int x) {
+    return (x > 0) - (x < 0);
+}
 
 
 class Board {
@@ -115,6 +117,15 @@ public:
 
     void setFullMoveCounter(const int counter) {
         _fullMoveCount = counter;
+    }
+
+    [[nodiscard]] Piece* getPieceFromList(const int pos) {
+        for (auto& pieceColorList = getPieceList(sgn(_board[pos])); auto& piece : pieceColorList) {
+            if (piece.getPosition() == pos && piece.isAlive()) {
+                return &piece;
+            }
+        }
+        return nullptr;
     }
 
 

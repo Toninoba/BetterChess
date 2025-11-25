@@ -33,8 +33,16 @@ public:
         return _type;
     }
 
+    [[nodiscard]] int getPiece() const {
+        return _type * _color;
+    }
+
     [[nodiscard]] int getPosition() const {
         return _position;
+    }
+
+    void setPosition(const int position) {
+        _position = position;
     }
 
     void setAlive(const bool status) {
