@@ -33,6 +33,10 @@ public:
         return _type;
     }
 
+    void setType(const TYPE type) {
+        _type = type;
+    }
+
     [[nodiscard]] int getPiece() const {
         return _type * _color;
     }

@@ -64,10 +64,10 @@ private:
         if (castlingRights != "-") {
             for (char c : castlingRights) {
                 switch (c) {
-                    case 'K': board.whiteKingCastling = true; break;
-                    case 'Q': board.whiteQueenCastling = true; break;
-                    case 'k': board.blackKingCastling = true; break;
-                    case 'q': board.blackQueenCastling = true; break;
+                    case 'K': board.castlingRights |= 0b0000100; break;
+                    case 'Q': board.castlingRights |= 0b0001000; break;
+                    case 'k': board.castlingRights |= 0b0000001; break;
+                    case 'q': board.castlingRights |= 0b0000010; break;
                     default: throw std::runtime_error("Invalid FEN");
                 }
             }

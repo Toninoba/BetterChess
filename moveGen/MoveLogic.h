@@ -17,11 +17,20 @@ struct Move {
     Piece::TYPE promotionType;
     bool isCastle = false;
     bool isEnPassant = false;
+
+    char prevCastlingRights = 0;
 };
 
 class MoveLogic {
 public:
-    static void performMove(Board& board, const Move& move);
+
+    /**
+    * Performs a single move on a board object, handles any type of move but does not check
+    * the legality of the move
+    * @param board
+    * @param move
+    */
+    static void performMove(Board& board, Move& move);
 
     static void undoLastMove(Board& board);
 
@@ -35,6 +44,8 @@ private:
     static void undoPromotion(Board& board, const Move& move);
     static void undoCastling(Board& board, const Move& move);
     static void undoEnPassant(Board& board, const Move& move);
+
+    static void updateCastlingRights(Board& board, const Move& move);
 };
 
 

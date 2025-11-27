@@ -22,16 +22,15 @@ public:
     static constexpr int EMPTY = 0;
     static constexpr int OUTSIDE = 9;
 
-    bool blackKingCastling;
-    bool blackQueenCastling;
-    bool whiteKingCastling;
-    bool whiteQueenCastling;
+    // Bitmask for describing castling rights
+    // 0b 0000 1111
+    // last 4 bits in order: White Queen, White King, Black Queen, Black King
+    char castlingRights;
 
 
     Board() : _halfMoveClock(0), _fullMoveCount(0), _turnToMove(Piece::WHITE),
                 _stalemate(false), _checkmate(false),
-                blackKingCastling(true), blackQueenCastling(true),
-                whiteKingCastling(true), whiteQueenCastling(true) {
+                castlingRights(0b00001111) {
 
         _whitePieces.reserve(16);
         _blackPieces.reserve(16);
@@ -97,10 +96,7 @@ public:
     }
 
     void clearCastlingRights() {
-        blackKingCastling = false;
-        blackQueenCastling = false;
-        whiteKingCastling = false;
-        whiteQueenCastling = false;
+        castlingRights = 0;
     }
 
     [[nodiscard]] int getHalfMoveClock() const {

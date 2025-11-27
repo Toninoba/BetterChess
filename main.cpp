@@ -6,25 +6,31 @@
 
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
     Board board;
 
-    std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    std::string fen = "8/8/8/8/8/8/8/R3K2R w KQkq - 0 1";
 
     FenParser::parseFen(board, fen);
 
     std::cout << board << std::endl;
     std::cout << board.getTurnToMove() << std::endl;
-    std::cout << board.getPieceFromList(E2)->getPosition() << std::endl;
 
-    Move move(E2, E3, board.getPieceFromList(E2), nullptr,
-        false, false, Piece::PAWN, false, false);
+    Move move(A1, A2, board.getPieceFromList(A1), nullptr, false, Piece::QUEEN, false, false);
 
     MoveLogic::performMove(board, move);
 
     std::cout << board << std::endl;
     std::cout << board.getTurnToMove() << std::endl;
-    std::cout << board.getPieceFromList(E3)->getPosition() << std::endl;
+
+
+    MoveLogic::undoLastMove(board);
+
+    std::cout << board << std::endl;
+    std::cout << board.getTurnToMove() << std::endl;
+
+
+
+
 
 
 
