@@ -91,6 +91,10 @@ public:
         return _turnToMove;
     }
 
+    [[nodiscard]] int getEnPassant() const {
+        return _enPassantPos;
+    }
+
     void setEnPassant(const int pos) {
         _enPassantPos = pos;
     }

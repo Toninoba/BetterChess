@@ -18,6 +18,8 @@ add_executable(BetterChess
         main.cpp
         pieces/Piece.cpp
         moveGen/MoveLogic.cpp
+        gameloop.cpp
+        gameloop.h
 )
 
 target_link_libraries(BetterChess Board)

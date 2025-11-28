@@ -19,6 +19,7 @@ struct Move {
     bool isEnPassant = false;
 
     char prevCastlingRights = 0;
+    int prevEnPassantPos = 0;
 };
 
 class MoveLogic {

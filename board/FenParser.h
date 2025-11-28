@@ -57,6 +57,9 @@ private:
 
             board.setEnPassant(pos);
         }
+        else {
+            board.setEnPassant(-1);
+        }
     }
 
     static void parseCastlingRights(Board& board, std::string& castlingRights) {

@@ -41,6 +41,16 @@ void MoveLogic::performMove(Board &board, Move &move) {
     // Update Castling Rights if necessary
     updateCastlingRights(board, move);
 
+    // Save last en Passant position of the board inside the move object
+    move.prevEnPassantPos = board.getEnPassant();
+
+    // Update en Passant position if double pawn move was made
+    if (move.movedPiece->getType() == Piece::PAWN && std::abs(move.from - move.to) >= 20) {
+        board.setEnPassant(move.to);
+    }
+    else {
+        board.setEnPassant(-1);
+    }
 
     // Change TurnToMove
     board.setTurnToMove(board.getTurnToMove() == Piece::WHITE ? Piece::BLACK : Piece::WHITE);
@@ -81,6 +91,9 @@ void MoveLogic::undoLastMove(Board &board) {
 
     // Restore Castling rights
     board.castlingRights = lastMove.prevCastlingRights;
+
+    // Restore En Passant pos
+    board.setEnPassant(lastMove.prevEnPassantPos);
 
     // change turnToMove
     board.setTurnToMove(board.getTurnToMove() == Piece::WHITE ? Piece::BLACK : Piece::WHITE);
