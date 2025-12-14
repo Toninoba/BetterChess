@@ -39,6 +39,10 @@ public:
     bitboard blackPieces = 0;
     bitboard occupied = 0;
 
+    static constexpr bitboard AFILE = 0x8080808080808080;
+    static constexpr bitboard HFILE = 0x1010101010101010;
+    static constexpr bitboard ABFILE = 0xC0C0C0C0C0C0C0C0;
+    static constexpr bitboard GHFILE = 0x303030303030303;
 
 
 private:
