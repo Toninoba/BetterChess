@@ -24,6 +24,7 @@ add_executable(BetterChess
         bitboards/BitboardData.h
         moveGen/MoveGenerator.cpp
         moveGen/MoveGenerator.h
+        moveGen/Move.cpp
 )
 
 target_link_libraries(BetterChess Board)

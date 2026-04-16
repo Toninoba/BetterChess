@@ -8,19 +8,7 @@
 #include "../board/Board.h"
 #include "../pieces/Piece.h"
 
-struct Move {
-    int from;
-    int to;
-    Piece* movedPiece;
-    Piece* capturedPiece;
-    bool isPromotion = false;
-    Piece::TYPE promotionType;
-    bool isCastle = false;
-    bool isEnPassant = false;
 
-    char prevCastlingRights = 0;
-    int prevEnPassantPos = 0;
-};
 
 class MoveLogic {
 public:
