@@ -5,7 +5,8 @@
 #ifndef BETTERCHESS_MOVEGENERATOR_H
 #define BETTERCHESS_MOVEGENERATOR_H
 #include "../bitboards/BitboardData.h"
-#include "Move.cpp"
+#include "Move.h"
+#include <iostream>
 
 
 class MoveGenerator {
@@ -20,6 +21,13 @@ public:
      * @return a vector of all pseudo legal moves for player, who's turn it is
      */
     static std::vector<Move> generatePseudoLegalMoves(Board& board);
+
+    static void generateMovesPiece(Board& board, Piece& piece, std::vector<Move>& pseudoMoves);
+
+    static void generateMovesPawn(Board& board, Piece& piece, std::vector<Move>& pseudoMoves);
+    static void generateMovesKnight(Board& board, Piece& piece, std::vector<Move>& pseudoMoves);
+    static void generateMovesKing(Board& board, Piece& piece, std::vector<Move>& pseudoMoves);
+    static void generateMovesSliding(Board& board, Piece& piece, std::vector<Move>& pseudoMoves);
 
 };
 

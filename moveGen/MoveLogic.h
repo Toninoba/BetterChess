@@ -6,7 +6,7 @@
 #define BETTERCHESS_MOVELOGIC_H
 
 #include "../board/Board.h"
-#include "../pieces/Piece.h"
+#include "Move.h"
 
 
 
