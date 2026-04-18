@@ -8,8 +8,10 @@ int main() {
     //start2PlayerGame();
 
     Board board;
-    std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    std::string fen = "8/8/8/2b5/8/8/8/2R4B w - - 0 1";
     FenParser::parseFen(board, fen);
+
+    std::cout << board << std::endl;
 
     MoveGenerator::generatePseudoLegalMoves(board);
 

@@ -25,7 +25,8 @@ MoveGenerator::bitboard MoveGenerator::pseudoKnightBitboard(BitboardData& bitboa
 
 std::vector<Move> MoveGenerator::generatePseudoLegalMoves(Board &board) {
 
-    std::vector<Move> pseudoLegalMoves(20);
+    std::vector<Move> pseudoLegalMoves;
+    pseudoLegalMoves.reserve(20);
 
     //Determine which sides moves to be generated
 
@@ -36,7 +37,9 @@ std::vector<Move> MoveGenerator::generatePseudoLegalMoves(Board &board) {
         generateMovesPiece(board, piece, pseudoLegalMoves);
     }
 
-
+    for (Move& m : pseudoLegalMoves) {
+        std::cout << m.from << " " << m.to << std::endl;
+    }
 
     return pseudoLegalMoves;
 }
@@ -80,8 +83,50 @@ void MoveGenerator::generateMovesSliding(Board &board, Piece &piece, std::vector
 
     // Iterate over every valid direction for the piece
     for (int i = offset; i < end; i++) {
+        const int dir = directions[i];
+        int newPos = piece.getPosition() + dir;
         // Iterate over every square that the piece can go in the given direction
+        while (board[newPos] != Board::OUTSIDE) {
+            
+            // Check for obstructing pieces
+            if (board[newPos] != Board::EMPTY) {
+                
+                if (sgn(board[newPos]) != piece.getColor()) {
+                    Piece* capturedPiece = board.getPieceFromList(newPos);
+                    // Test for nullptr
+                    #ifndef NDEBUG
+                    if (capturedPiece == nullptr) {
+
+                        throw std::invalid_argument("Captured Piece in sliding move generation is a nullptr");
+                    }
+                    #endif
+
+                    pseudoMoves.emplace_back(piece.getPosition(), newPos, &piece, capturedPiece);
+                }
+                
+                // stop direction and goto next since piece is blocking regardless of color
+                break;
+            }
+            
+            // Square is empty and we can continue
+            pseudoMoves.emplace_back(Move{piece.getPosition(),newPos, &piece});
+            
+            // Update position
+            newPos += dir;
+        }
 
     }
+
+}
+
+void MoveGenerator::generateMovesKnight(Board &board, Piece &piece, std::vector<Move> &pseudoMoves) {
+
+}
+
+void MoveGenerator::generateMovesKing(Board &board, Piece &piece, std::vector<Move> &pseudoMoves) {
+
+}
+
+void MoveGenerator::generateMovesPawn(Board &board, Piece &piece, std::vector<Move> &pseudoMoves) {
 
 }

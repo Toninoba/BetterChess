@@ -17,6 +17,8 @@ struct Move {
     bool isCastle = false;
     bool isEnPassant = false;
 
+    // DO NOT SET THESE WHILE CONSTRUCTING A MOVE
+    // used only for reconstructing previous board
     char prevCastlingRights = 0;
     int prevEnPassantPos = 0;
 };

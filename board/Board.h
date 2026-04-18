@@ -17,10 +17,16 @@ constexpr int sgn(const int x) {
 }
 
 
+
+
+
+
 class Board {
 public:
     static constexpr int EMPTY = 0;
     static constexpr int OUTSIDE = 9;
+
+    static int edgeTiles[8][8];
 
     // Bitmask for describing castling rights
     // 0b 0000 1111
@@ -34,6 +40,7 @@ public:
 
         _whitePieces.reserve(16);
         _blackPieces.reserve(16);
+
 
     }
 
@@ -119,6 +126,11 @@ public:
         _fullMoveCount = counter;
     }
 
+    /**
+     * Returns a pointer to a piece object from a given board position
+     * @param pos position of the piece
+     * @return a pointer to the piece in the list, if nothing is found return nullptr
+     */
     [[nodiscard]] Piece* getPieceFromList(const int pos) {
         for (auto& pieceColorList = getPieceList(sgn(_board[pos])); auto& piece : pieceColorList) {
             if (piece.getPosition() == pos && piece.isAlive()) {
@@ -127,6 +139,9 @@ public:
         }
         return nullptr;
     }
+
+
+
 
 
 
