@@ -120,6 +120,33 @@ void MoveGenerator::generateMovesSliding(Board &board, Piece &piece, std::vector
 }
 
 void MoveGenerator::generateMovesKnight(Board &board, Piece &piece, std::vector<Move> &pseudoMoves) {
+    static constexpr int directions[] = {19, 21, -19, -21, 12, -12, 8, -8};
+
+    for (int dir : directions) {
+        int newPos = piece.getPosition() + dir;
+        if (board[newPos] == Board::OUTSIDE) {
+            continue;
+        }
+
+        if (board[newPos] != Board::EMPTY) {
+            if (sgn(board[newPos]) != piece.getColor()) {
+                Piece* capturedPiece = board.getPieceFromList(newPos);
+                // Test for nullptr
+                #ifndef NDEBUG
+                if (capturedPiece == nullptr) {
+
+                    throw std::invalid_argument("Captured Piece in sliding move generation is a nullptr");
+                }
+                #endif
+
+                pseudoMoves.emplace_back(piece.getPosition(), newPos, &piece, capturedPiece);
+            }
+        }
+        else {
+            pseudoMoves.emplace_back(Move{piece.getPosition(), newPos, &piece});
+        }
+
+    }
 
 }
 
@@ -128,5 +155,12 @@ void MoveGenerator::generateMovesKing(Board &board, Piece &piece, std::vector<Mo
 }
 
 void MoveGenerator::generateMovesPawn(Board &board, Piece &piece, std::vector<Move> &pseudoMoves) {
+    // Differentiate between black and white (white moves 1 square up, black -1 squares)
+    int moveDirection = piece.getColor() * 10;
+    int attackPos1 = moveDirection + 1;
+    int attackPos2 = moveDirection - 1;
 
+    // Check for double pawn moves
+    if ((piece.getPosition() > 30 && piece.getPosition() < 39 && piece.getColor() == Piece::WHITE) ||
+        (piece.getPosition() > 30 && piece.getPosition() < 39 && piece.getColor() == Piece::BLACK))
 }
