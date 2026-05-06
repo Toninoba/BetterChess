@@ -170,7 +170,7 @@ void MoveGenerator::generateMovesPawn(Board &board, Piece &piece, std::vector<Mo
         // Check for double pawn moves
         // TODO simplify expression
         if (((piece.getPosition() > 30 && piece.getPosition() < 39 && piece.getColor() == Piece::WHITE) ||
-        (piece.getPosition() > 30 && piece.getPosition() < 39 && piece.getColor() == Piece::BLACK)) &&
+        (piece.getPosition() > 80 && piece.getPosition() < 89 && piece.getColor() == Piece::BLACK)) &&
         board[movePos + moveDirection] == Board::EMPTY) {
 
             pseudoMoves.emplace_back(Move{piece.getPosition(), movePos + moveDirection, &piece});
