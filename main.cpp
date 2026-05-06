@@ -8,7 +8,7 @@ int main() {
     //start2PlayerGame();
 
     Board board;
-    std::string fen = "8/8/8/8/p7/3P4/1N6/8 w - - 0 1";
+    std::string fen = "8/2p2P2/8/8/8/3p4/2PP1p2/8 b - - 0 1";
     FenParser::parseFen(board, fen);
 
     std::cout << board << std::endl;

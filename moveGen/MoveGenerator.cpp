@@ -159,8 +159,25 @@ void MoveGenerator::generateMovesPawn(Board &board, Piece &piece, std::vector<Mo
     int moveDirection = piece.getColor() * 10;
     int attackPos1 = moveDirection + 1;
     int attackPos2 = moveDirection - 1;
+    int movePos = piece.getPosition() + moveDirection;
 
-    // Check for double pawn moves
-    if ((piece.getPosition() > 30 && piece.getPosition() < 39 && piece.getColor() == Piece::WHITE) ||
-        (piece.getPosition() > 30 && piece.getPosition() < 39 && piece.getColor() == Piece::BLACK))
+    // first check for space infront
+
+    if (board[movePos] == Board::EMPTY) {
+
+        pseudoMoves.emplace_back(Move{piece.getPosition(), movePos, &piece});
+
+        // Check for double pawn moves
+        // TODO simplify expression
+        if (((piece.getPosition() > 30 && piece.getPosition() < 39 && piece.getColor() == Piece::WHITE) ||
+        (piece.getPosition() > 30 && piece.getPosition() < 39 && piece.getColor() == Piece::BLACK)) &&
+        board[movePos + moveDirection] == Board::EMPTY) {
+
+            pseudoMoves.emplace_back(Move{piece.getPosition(), movePos + moveDirection, &piece});
+
+        }
+    }
+
+
+
 }
