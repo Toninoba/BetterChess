@@ -5,9 +5,7 @@
 #include "MoveGenerator.h"
 
 
-
-MoveGenerator::bitboard MoveGenerator::pseudoKnightBitboard(BitboardData& bitboards) {
-
+MoveGenerator::bitboard MoveGenerator::pseudoKnightBitboard(BitboardData &bitboards) {
     bitboard attacks = 0;
 
     attacks |= (bitboards.whiteKnights & ~BitboardData::AFILE) << 17;
@@ -24,20 +22,19 @@ MoveGenerator::bitboard MoveGenerator::pseudoKnightBitboard(BitboardData& bitboa
 }
 
 std::vector<Move> MoveGenerator::generatePseudoLegalMoves(Board &board) {
-
     std::vector<Move> pseudoLegalMoves;
     pseudoLegalMoves.reserve(20);
 
     //Determine which sides moves to be generated
 
-    std::vector<Piece>& pieces = board.getPieceList(board.getTurnToMove());
+    std::vector<Piece> &pieces = board.getPieceList(board.getTurnToMove());
 
     // Start generating pseudo legal moves
-    for (Piece& piece : pieces) {
+    for (Piece &piece: pieces) {
         generateMovesPiece(board, piece, pseudoLegalMoves);
     }
 
-    for (Move& m : pseudoLegalMoves) {
+    for (Move &m: pseudoLegalMoves) {
         std::cout << m.from << " " << m.to << std::endl;
     }
 
@@ -58,12 +55,9 @@ void MoveGenerator::generateMovesPiece(Board &board, Piece &piece, std::vector<M
         default:
             if (piece.getType() == Piece::ROOK || piece.getType() == Piece::BISHOP || piece.getType() == Piece::QUEEN) {
                 generateMovesSliding(board, piece, pseudoMoves);
-            }
-            else {
+            } else {
                 throw std::invalid_argument("Invalid Piece for Generation");
             }
-
-
     }
 }
 
@@ -87,42 +81,37 @@ void MoveGenerator::generateMovesSliding(Board &board, Piece &piece, std::vector
         int newPos = piece.getPosition() + dir;
         // Iterate over every square that the piece can go in the given direction
         while (board[newPos] != Board::OUTSIDE) {
-            
             // Check for obstructing pieces
             if (board[newPos] != Board::EMPTY) {
-                
                 if (sgn(board[newPos]) != piece.getColor()) {
-                    Piece* capturedPiece = board.getPieceFromList(newPos);
+                    Piece *capturedPiece = board.getPieceFromList(newPos);
                     // Test for nullptr
-                    #ifndef NDEBUG
+#ifndef NDEBUG
                     if (capturedPiece == nullptr) {
-
                         throw std::invalid_argument("Captured Piece in sliding move generation is a nullptr");
                     }
-                    #endif
+#endif
 
                     pseudoMoves.emplace_back(piece.getPosition(), newPos, &piece, capturedPiece);
                 }
-                
+
                 // stop direction and goto next since piece is blocking regardless of color
                 break;
             }
-            
+
             // Square is empty and we can continue
-            pseudoMoves.emplace_back(Move{piece.getPosition(),newPos, &piece});
-            
+            pseudoMoves.emplace_back(Move{piece.getPosition(), newPos, &piece});
+
             // Update position
             newPos += dir;
         }
-
     }
-
 }
 
 void MoveGenerator::generateMovesKnight(Board &board, Piece &piece, std::vector<Move> &pseudoMoves) {
     static constexpr int directions[] = {19, 21, -19, -21, 12, -12, 8, -8};
 
-    for (int dir : directions) {
+    for (int dir: directions) {
         int newPos = piece.getPosition() + dir;
         if (board[newPos] == Board::OUTSIDE) {
             continue;
@@ -130,27 +119,48 @@ void MoveGenerator::generateMovesKnight(Board &board, Piece &piece, std::vector<
 
         if (board[newPos] != Board::EMPTY) {
             if (sgn(board[newPos]) != piece.getColor()) {
-                Piece* capturedPiece = board.getPieceFromList(newPos);
+                Piece *capturedPiece = board.getPieceFromList(newPos);
                 // Test for nullptr
-                #ifndef NDEBUG
+#ifndef NDEBUG
                 if (capturedPiece == nullptr) {
-
                     throw std::invalid_argument("Captured Piece in sliding move generation is a nullptr");
                 }
-                #endif
+#endif
 
                 pseudoMoves.emplace_back(piece.getPosition(), newPos, &piece, capturedPiece);
             }
-        }
-        else {
+        } else {
             pseudoMoves.emplace_back(Move{piece.getPosition(), newPos, &piece});
         }
-
     }
-
 }
 
 void MoveGenerator::generateMovesKing(Board &board, Piece &piece, std::vector<Move> &pseudoMoves) {
+    static constexpr int directions[] = {9, 11, -9, -11, 1, -1, 10, -10};
+
+    // check normal moves
+    for (int dir : directions) {
+        int nextPos = piece.getPosition() + dir;
+
+        if (board[nextPos] == Board::EMPTY) {
+            pseudoMoves.emplace_back(Move{piece.getPosition(), nextPos, &piece});
+        }
+        if (board[nextPos] != Board::EMPTY && sgn(board[nextPos]) != piece.getColor()) {
+            Piece *capturedPiece = board.getPieceFromList(nextPos);
+            // Test for nullptr
+#ifndef NDEBUG
+            if (capturedPiece == nullptr) {
+                throw std::invalid_argument("Captured Piece in sliding move generation is a nullptr");
+            }
+#endif
+
+            pseudoMoves.emplace_back(piece.getPosition(), nextPos, &piece, capturedPiece);
+        }
+    }
+
+    // check for castling
+
+    // TODO implement castling im tired
 
 }
 
@@ -164,17 +174,12 @@ void MoveGenerator::generateMovesPawn(Board &board, Piece &piece, std::vector<Mo
     // first check for space infront
 
     if (board[movePos] == Board::EMPTY) {
-
-
-
         // Check for double pawn moves
         // TODO simplify expression
         if (((piece.getPosition() > 30 && piece.getPosition() < 39 && piece.getColor() == Piece::WHITE) ||
-        (piece.getPosition() > 80 && piece.getPosition() < 89 && piece.getColor() == Piece::BLACK)) &&
-        board[movePos + moveDirection] == Board::EMPTY) {
-
+             (piece.getPosition() > 80 && piece.getPosition() < 89 && piece.getColor() == Piece::BLACK)) &&
+            board[movePos + moveDirection] == Board::EMPTY) {
             pseudoMoves.emplace_back(Move{piece.getPosition(), movePos + moveDirection, &piece});
-
         }
 
         // Check for Pawn conversions
@@ -184,49 +189,68 @@ void MoveGenerator::generateMovesPawn(Board &board, Piece &piece, std::vector<Mo
             pseudoMoves.emplace_back(Move{piece.getPosition(), movePos, &piece, nullptr, true, Piece::ROOK});
             pseudoMoves.emplace_back(Move{piece.getPosition(), movePos, &piece, nullptr, true, Piece::KNIGHT});
             pseudoMoves.emplace_back(Move{piece.getPosition(), movePos, &piece, nullptr, true, Piece::QUEEN});
-        }
-        else {
+        } else {
             pseudoMoves.emplace_back(Move{piece.getPosition(), movePos, &piece});
         }
-
-
-
-
-
     }
 
     // check for capturing pieces for each attack position
-    // TODO implement pawn conversion for capturing moves
+
 
     if (board[attackPos1] != Board::EMPTY && sgn(board[attackPos1]) != piece.getColor()) {
-        Piece* capturedPiece = board.getPieceFromList(attackPos1);
+        Piece *capturedPiece = board.getPieceFromList(attackPos1);
         // Test for nullptr
 #ifndef NDEBUG
         if (capturedPiece == nullptr) {
-
             throw std::invalid_argument("Captured Piece in pawn move generation attackpos1 is a nullptr");
         }
 #endif
 
-        pseudoMoves.emplace_back(piece.getPosition(), attackPos1, &piece, capturedPiece);
+
+        // check for capturing pawn conversions
+        if (movePos / 20 == 1 || movePos / 90 == 1) {
+            pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos1, &piece, capturedPiece, true, Piece::BISHOP});
+            pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos1, &piece, capturedPiece, true, Piece::ROOK});
+            pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos1, &piece, capturedPiece, true, Piece::KNIGHT});
+            pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos1, &piece, capturedPiece, true, Piece::QUEEN});
+        } else {
+            pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos1, &piece, capturedPiece});
+        }
     }
 
     if (board[attackPos2] != Board::EMPTY && sgn(board[attackPos2]) != piece.getColor()) {
-        Piece* capturedPiece = board.getPieceFromList(attackPos2);
+        Piece *capturedPiece = board.getPieceFromList(attackPos2);
         // Test for nullptr
 #ifndef NDEBUG
         if (capturedPiece == nullptr) {
-
             throw std::invalid_argument("Captured Piece in pawn move generation attackpos2 is a nullptr");
         }
 #endif
 
-        pseudoMoves.emplace_back(piece.getPosition(), attackPos2, &piece, capturedPiece);
+        if (movePos / 20 == 1 || movePos / 90 == 1) {
+            pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos2, &piece, capturedPiece, true, Piece::BISHOP});
+            pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos2, &piece, capturedPiece, true, Piece::ROOK});
+            pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos2, &piece, capturedPiece, true, Piece::KNIGHT});
+            pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos2, &piece, capturedPiece, true, Piece::QUEEN});
+        } else {
+            pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos2, &piece, capturedPiece});
+        }
     }
 
+    // check for en passant
+    if ((board.getEnPassant() == piece.getPosition() - 1 ||
+         board.getEnPassant() == piece.getPosition() + 1) &&
+        sgn(board[board.getEnPassant()]) != piece.getColor()) {
+        int moveTo = board.getEnPassant() + (-10 * sgn(board[board.getEnPassant()]));
+        Piece *capturedPiece = board.getPieceFromList(board.getEnPassant());
+        // Test for nullptr
+#ifndef NDEBUG
+        if (capturedPiece == nullptr) {
+            throw std::invalid_argument("Captured Piece in pawn move generation attackpos2 is a nullptr");
+        }
+#endif
 
 
-
-
-
+        pseudoMoves.emplace_back(piece.getPosition(), moveTo, &piece, capturedPiece, false, Piece::KING, false, true);
+    }
 }
