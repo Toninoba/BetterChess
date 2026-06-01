@@ -159,8 +159,28 @@ void MoveGenerator::generateMovesKing(Board &board, Piece &piece, std::vector<Mo
     }
 
     // check for castling
+    if (board.canCastleKingSide(piece.getColor())) {
+        // Check for empty squares on white side
+        if (piece.getColor() == Piece::WHITE && board[F1] == Board::EMPTY && board[G1] == Board::EMPTY) {
+            pseudoMoves.emplace_back(piece.getPosition(), G1, &piece, nullptr, false, Piece::KING, true);
+        }
+        // Check for empty squares on black side
+        else if (piece.getColor() == Piece::BLACK && board[F8] == Board::EMPTY && board[G8] == Board::EMPTY) {
+            pseudoMoves.emplace_back(piece.getPosition(), G8, &piece, nullptr, false, Piece::KING, true);
+        }
 
-    // TODO implement castling im tired
+    }
+
+    if (board.canCastQueenSide(piece.getColor())) {
+        // Check for empty squares on white side
+        if (piece.getColor() == Piece::WHITE && board[B1] == Board::EMPTY && board[C1] == Board::EMPTY && board[D1] == Board::EMPTY) {
+            pseudoMoves.emplace_back(piece.getPosition(), C1, &piece, nullptr, false, Piece::KING, true);
+        }
+        // Check for empty squares on black side
+        else if (piece.getColor() == Piece::BLACK && board[B8] == Board::EMPTY && board[C8] == Board::EMPTY && board[D8] == Board::EMPTY) {
+            pseudoMoves.emplace_back(piece.getPosition(), C8, &piece, nullptr, false, Piece::KING, true);
+        }
+    }
 
 }
 

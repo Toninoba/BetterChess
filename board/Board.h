@@ -126,6 +126,24 @@ public:
         _fullMoveCount = counter;
     }
 
+    [[nodiscard]] bool canCastleKingSide(int color) const {
+        if (color == 1) {
+            return castlingRights & 0b00000100;
+        }
+        else {
+            return castlingRights & 0b00000001;
+        }
+    }
+
+    [[nodiscard]] bool canCastQueenSide(int color) const {
+        if (color == 1) {
+            return castlingRights & 0b00001000;
+        }
+        else {
+            return castlingRights & 0b00000010;
+        }
+    }
+
     /**
      * Returns a pointer to a piece object from a given board position
      * @param pos position of the piece
