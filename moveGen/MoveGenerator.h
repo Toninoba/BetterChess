@@ -22,12 +22,17 @@ public:
      */
     static std::vector<Move> generatePseudoLegalMoves(Board& board);
 
+    static std::vector<Move> generateLegalMoves(Board& board);
+
     static void generateMovesPiece(Board& board, Piece& piece, std::vector<Move>& pseudoMoves);
 
     static void generateMovesPawn(Board& board, Piece& piece, std::vector<Move>& pseudoMoves);
     static void generateMovesKnight(Board& board, Piece& piece, std::vector<Move>& pseudoMoves);
     static void generateMovesKing(Board& board, Piece& piece, std::vector<Move>& pseudoMoves);
     static void generateMovesSliding(Board& board, Piece& piece, std::vector<Move>& pseudoMoves);
+
+    static bool isKingChecked(Board& board, int color);
+    static bool isSlidingAttacker(int piece, int dir);
 
 };
 

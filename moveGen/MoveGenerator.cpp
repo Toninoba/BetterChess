@@ -4,6 +4,8 @@
 
 #include "MoveGenerator.h"
 
+#include "MoveLogic.h"
+
 
 MoveGenerator::bitboard MoveGenerator::pseudoKnightBitboard(BitboardData &bitboards) {
     bitboard attacks = 0;
@@ -21,6 +23,42 @@ MoveGenerator::bitboard MoveGenerator::pseudoKnightBitboard(BitboardData &bitboa
     return attacks;
 }
 
+std::vector<Move> MoveGenerator::generateLegalMoves(Board &board) {
+
+    std::vector<Move> moves = generatePseudoLegalMoves(board);
+
+    // Now delete every non legal move (this is extremly slow because of O(n) or something deletion)
+    // optimize by only adding the legal moves and not checking if they are legal
+
+    // Extract turnToMove to determine which King should be checked for, since it changes after performing move
+    const int turnToMove = board.getTurnToMove();
+
+    // TODO Implement correct castling rules (king cannot leave checked square, king cannot jump over attacked square)
+
+    moves.erase(
+    std::remove_if(
+        moves.begin(),
+        moves.end(),
+        [&](Move& m)
+        {
+            // perform move
+            MoveLogic::performMove(board, m);
+            // Check if king is in check
+            bool illegal = isKingChecked(board, turnToMove);
+            // undo Move
+            MoveLogic::undoLastMove(board);
+
+            return illegal; // remove this move
+        }),
+    moves.end());
+
+    for (Move &m: moves) {
+        std::cout << m.from << " " << m.to << std::endl;
+    }
+
+    return moves;
+}
+
 std::vector<Move> MoveGenerator::generatePseudoLegalMoves(Board &board) {
     std::vector<Move> pseudoLegalMoves;
     pseudoLegalMoves.reserve(20);
@@ -32,10 +70,6 @@ std::vector<Move> MoveGenerator::generatePseudoLegalMoves(Board &board) {
     // Start generating pseudo legal moves
     for (Piece &piece: pieces) {
         generateMovesPiece(board, piece, pseudoLegalMoves);
-    }
-
-    for (Move &m: pseudoLegalMoves) {
-        std::cout << m.from << " " << m.to << std::endl;
     }
 
     return pseudoLegalMoves;
@@ -273,4 +307,65 @@ void MoveGenerator::generateMovesPawn(Board &board, Piece &piece, std::vector<Mo
 
         pseudoMoves.emplace_back(piece.getPosition(), moveTo, &piece, capturedPiece, false, Piece::KING, false, true);
     }
+}
+
+bool MoveGenerator::isKingChecked(Board &board, int color) {
+    auto pieceList = board.getPieceList(color);
+
+    static constexpr int knightDirections[] = {19, 21, -19, -21, 12, -12, 8, -8};
+    static constexpr int slidingDirections[] = {9, 11, -9, -11, 1, -1, 10, -10};
+
+    const auto it = std::find_if(pieceList.begin(), pieceList.end(),
+        [&color](const Piece& piece){return piece.getColor() == color && piece.getType() == Piece::KING;});
+
+    if (it == pieceList.end()) {
+        throw std::invalid_argument("Could not find King in Piece List");
+    }
+
+    const Piece& king = *it;
+
+    // Go through sliding directions
+
+    for (const int dir : slidingDirections) {
+        int checkDirection = king.getPosition() + dir;
+        while(board[checkDirection] != Board::OUTSIDE) {
+
+            if(board[checkDirection] != Board::EMPTY && sgn(board[checkDirection]) != color) {
+                if(isSlidingAttacker(abs(board[checkDirection]), dir)) {
+                    return true;
+                }
+
+                break;
+
+            }
+            if(board[checkDirection] != 0 && sgn(board[checkDirection]) == color){
+                break;
+            }
+            checkDirection += dir;
+        }
+    }
+
+
+    // Check Knight Spots
+    for(const int dir : knightDirections) {
+        const int checkDirection = king.getPosition() + dir;
+        const int potPiece = board[checkDirection];
+
+        if(abs(potPiece) == Piece::KNIGHT && sgn(potPiece) != color) {
+            return true;
+        }
+    }
+
+
+    return false;
+}
+
+bool MoveGenerator::isSlidingAttacker(int piece, int dir) {
+    if((piece == Piece::ROOK || piece == Piece::QUEEN) &&
+           (dir == 1 || dir == -1 || dir == 10 || dir == -10)) return true;
+
+    if((piece == Piece::BISHOP || piece == Piece::QUEEN) &&
+        (dir == 9 || dir == -9 || dir == 11 || dir == -11)) return true;
+
+    return false;
 }
