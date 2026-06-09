@@ -224,6 +224,23 @@ void MoveLogic::updateCastlingRights(Board &board, const Move &move) {
             // Do nothing
         }
     }
+
+
+    // Check if Rooks are still standing on the right places, since capturing one does not affect castling to this point
+    if (board[A1] != Piece::ROOK * Piece::WHITE) {
+        board.castlingRights &= 0b00000111;
+    }
+    if (board[H1] != Piece::ROOK * Piece::WHITE) {
+        board.castlingRights &= 0b00001011;
+    }
+    if (board[A8] != Piece::ROOK * Piece::BLACK) {
+        board.castlingRights &= 0b00001101;
+    }
+    if (board[H8] != Piece::ROOK * Piece::BLACK) {
+        board.castlingRights &= 0b00001110;
+    }
+
+
 }
 
 

@@ -6,7 +6,7 @@
 
 #include "MoveLogic.h"
 
-
+/*
 MoveGenerator::bitboard MoveGenerator::pseudoKnightBitboard(BitboardData &bitboards) {
     bitboard attacks = 0;
 
@@ -22,6 +22,7 @@ MoveGenerator::bitboard MoveGenerator::pseudoKnightBitboard(BitboardData &bitboa
 
     return attacks;
 }
+*/
 
 std::vector<Move> MoveGenerator::generateLegalMoves(Board &board) {
 
@@ -33,14 +34,16 @@ std::vector<Move> MoveGenerator::generateLegalMoves(Board &board) {
     // Extract turnToMove to determine which King should be checked for, since it changes after performing move
     const int turnToMove = board.getTurnToMove();
 
-    // TODO Implement correct castling rules (king cannot leave checked square, king cannot jump over attacked square)
-
     moves.erase(
     std::remove_if(
         moves.begin(),
         moves.end(),
         [&](Move& m)
         {
+            // differentiate between normal moves and castling
+            if (m.isCastle) {
+                return !isLegalCastle(board, m);
+            }
             // perform move
             MoveLogic::performMove(board, m);
             // Check if king is in check
@@ -52,9 +55,11 @@ std::vector<Move> MoveGenerator::generateLegalMoves(Board &board) {
         }),
     moves.end());
 
+    /*
     for (Move &m: moves) {
         std::cout << m.from << " " << m.to << std::endl;
     }
+    */
 
     return moves;
 }
@@ -69,7 +74,10 @@ std::vector<Move> MoveGenerator::generatePseudoLegalMoves(Board &board) {
 
     // Start generating pseudo legal moves
     for (Piece &piece: pieces) {
-        generateMovesPiece(board, piece, pseudoLegalMoves);
+        if (piece.isAlive()) {
+            generateMovesPiece(board, piece, pseudoLegalMoves);
+        }
+
     }
 
     return pseudoLegalMoves;
@@ -157,7 +165,7 @@ void MoveGenerator::generateMovesKnight(Board &board, Piece &piece, std::vector<
                 // Test for nullptr
 #ifndef NDEBUG
                 if (capturedPiece == nullptr) {
-                    throw std::invalid_argument("Captured Piece in sliding move generation is a nullptr");
+                    throw std::invalid_argument("Captured Piece in Knight move generation is a nullptr");
                 }
 #endif
 
@@ -176,6 +184,10 @@ void MoveGenerator::generateMovesKing(Board &board, Piece &piece, std::vector<Mo
     for (int dir : directions) {
         int nextPos = piece.getPosition() + dir;
 
+        if (board[nextPos] == Board::OUTSIDE) {
+            continue;
+        }
+
         if (board[nextPos] == Board::EMPTY) {
             pseudoMoves.emplace_back(Move{piece.getPosition(), nextPos, &piece});
         }
@@ -184,7 +196,7 @@ void MoveGenerator::generateMovesKing(Board &board, Piece &piece, std::vector<Mo
             // Test for nullptr
 #ifndef NDEBUG
             if (capturedPiece == nullptr) {
-                throw std::invalid_argument("Captured Piece in sliding move generation is a nullptr");
+                throw std::invalid_argument("Captured Piece in King move generation is a nullptr");
             }
 #endif
 
@@ -238,7 +250,7 @@ void MoveGenerator::generateMovesPawn(Board &board, Piece &piece, std::vector<Mo
 
         // Check for Pawn conversions
 
-        if (movePos / 20 == 1 || movePos / 90 == 1) {
+        if (movePos / 10 == 2 || movePos / 10 == 9) {
             pseudoMoves.emplace_back(Move{piece.getPosition(), movePos, &piece, nullptr, true, Piece::BISHOP});
             pseudoMoves.emplace_back(Move{piece.getPosition(), movePos, &piece, nullptr, true, Piece::ROOK});
             pseudoMoves.emplace_back(Move{piece.getPosition(), movePos, &piece, nullptr, true, Piece::KNIGHT});
@@ -251,7 +263,7 @@ void MoveGenerator::generateMovesPawn(Board &board, Piece &piece, std::vector<Mo
     // check for capturing pieces for each attack position
 
 
-    if (board[attackPos1] != Board::EMPTY && sgn(board[attackPos1]) != piece.getColor()) {
+    if (board[attackPos1] != Board::EMPTY && board[attackPos1] != Board::OUTSIDE && sgn(board[attackPos1]) != piece.getColor()) {
         Piece *capturedPiece = board.getPieceFromList(attackPos1);
         // Test for nullptr
 #ifndef NDEBUG
@@ -262,7 +274,7 @@ void MoveGenerator::generateMovesPawn(Board &board, Piece &piece, std::vector<Mo
 
 
         // check for capturing pawn conversions
-        if (movePos / 20 == 1 || movePos / 90 == 1) {
+        if (movePos / 10 == 2 || movePos / 10 == 9) {
             pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos1, &piece, capturedPiece, true, Piece::BISHOP});
             pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos1, &piece, capturedPiece, true, Piece::ROOK});
             pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos1, &piece, capturedPiece, true, Piece::KNIGHT});
@@ -272,7 +284,7 @@ void MoveGenerator::generateMovesPawn(Board &board, Piece &piece, std::vector<Mo
         }
     }
 
-    if (board[attackPos2] != Board::EMPTY && sgn(board[attackPos2]) != piece.getColor()) {
+    if (board[attackPos2] != Board::EMPTY && board[attackPos2] != Board::OUTSIDE && sgn(board[attackPos2]) != piece.getColor()) {
         Piece *capturedPiece = board.getPieceFromList(attackPos2);
         // Test for nullptr
 #ifndef NDEBUG
@@ -281,7 +293,7 @@ void MoveGenerator::generateMovesPawn(Board &board, Piece &piece, std::vector<Mo
         }
 #endif
 
-        if (movePos / 20 == 1 || movePos / 90 == 1) {
+        if (movePos / 10 == 2 || movePos / 10 == 9) {
             pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos2, &piece, capturedPiece, true, Piece::BISHOP});
             pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos2, &piece, capturedPiece, true, Piece::ROOK});
             pseudoMoves.emplace_back(Move{piece.getPosition(), attackPos2, &piece, capturedPiece, true, Piece::KNIGHT});
@@ -312,9 +324,6 @@ void MoveGenerator::generateMovesPawn(Board &board, Piece &piece, std::vector<Mo
 bool MoveGenerator::isKingChecked(Board &board, int color) {
     auto pieceList = board.getPieceList(color);
 
-    static constexpr int knightDirections[] = {19, 21, -19, -21, 12, -12, 8, -8};
-    static constexpr int slidingDirections[] = {9, 11, -9, -11, 1, -1, 10, -10};
-
     const auto it = std::find_if(pieceList.begin(), pieceList.end(),
         [&color](const Piece& piece){return piece.getColor() == color && piece.getType() == Piece::KING;});
 
@@ -324,39 +333,9 @@ bool MoveGenerator::isKingChecked(Board &board, int color) {
 
     const Piece& king = *it;
 
-    // Go through sliding directions
-
-    for (const int dir : slidingDirections) {
-        int checkDirection = king.getPosition() + dir;
-        while(board[checkDirection] != Board::OUTSIDE) {
-
-            if(board[checkDirection] != Board::EMPTY && sgn(board[checkDirection]) != color) {
-                if(isSlidingAttacker(abs(board[checkDirection]), dir)) {
-                    return true;
-                }
-
-                break;
-
-            }
-            if(board[checkDirection] != 0 && sgn(board[checkDirection]) == color){
-                break;
-            }
-            checkDirection += dir;
-        }
+    if (isSquareAttacked(board, king.getPosition(), king.getColor())) {
+        return true;
     }
-
-
-    // Check Knight Spots
-    for(const int dir : knightDirections) {
-        const int checkDirection = king.getPosition() + dir;
-        const int potPiece = board[checkDirection];
-
-        if(abs(potPiece) == Piece::KNIGHT && sgn(potPiece) != color) {
-            return true;
-        }
-    }
-
-
     return false;
 }
 
@@ -366,6 +345,77 @@ bool MoveGenerator::isSlidingAttacker(int piece, int dir) {
 
     if((piece == Piece::BISHOP || piece == Piece::QUEEN) &&
         (dir == 9 || dir == -9 || dir == 11 || dir == -11)) return true;
+
+    return false;
+}
+
+bool MoveGenerator::isLegalCastle(Board &board, const Move &move) {
+    if (move.from == E1 && move.to == G1) {
+        return !(isSquareAttacked(board, E1, move.movedPiece->getColor()) ||
+                isSquareAttacked(board, F1, move.movedPiece->getColor()) ||
+                isSquareAttacked(board, G1, move.movedPiece->getColor()));
+    }
+    if (move.from == E1 && move.to == C1) {
+        return !(isSquareAttacked(board, E1, move.movedPiece->getColor()) ||
+                isSquareAttacked(board, D1, move.movedPiece->getColor()) ||
+                isSquareAttacked(board, C1, move.movedPiece->getColor()));
+    }
+    if (move.from == E8 && move.to == G8) {
+        return !(isSquareAttacked(board, E8, move.movedPiece->getColor()) ||
+                isSquareAttacked(board, F8, move.movedPiece->getColor()) ||
+                isSquareAttacked(board, G8, move.movedPiece->getColor()));
+    }
+    if (move.from == E8 && move.to == C8) {
+        return !(isSquareAttacked(board, E8, move.movedPiece->getColor()) ||
+                isSquareAttacked(board, D8, move.movedPiece->getColor()) ||
+                isSquareAttacked(board, C8, move.movedPiece->getColor()));
+    }
+    return false;
+}
+
+bool MoveGenerator::isSquareAttacked(Board &board, int square, int color) {
+
+    static constexpr int knightDirections[] = {19, 21, -19, -21, 12, -12, 8, -8};
+    static constexpr int slidingDirections[] = {9, 11, -9, -11, 1, -1, 10, -10};
+
+
+
+    // Go through sliding directions
+    for (const int dir : slidingDirections) {
+        int checkDirection = square + dir;
+        while(board[checkDirection] != Board::OUTSIDE) {
+
+            if(board[checkDirection] != Board::EMPTY && sgn(board[checkDirection]) != color) {
+                if(isSlidingAttacker(abs(board[checkDirection]), dir)) {
+                    return true;
+                }
+                break;
+            }
+            if(board[checkDirection] != 0 && sgn(board[checkDirection]) == color){
+                break;
+            }
+            checkDirection += dir;
+        }
+    }
+
+    // Check Knight Spots
+    for(const int dir : knightDirections) {
+        const int checkDirection = square + dir;
+        const int potPiece = board[checkDirection];
+
+        if(abs(potPiece) == Piece::KNIGHT && sgn(potPiece) != color) {
+            return true;
+        }
+    }
+
+    // Check Pawns
+    int pawnPos1 = square + (11 * color);
+    int pawnPos2 = square + (9 * color);
+
+    if ((abs(board[pawnPos1]) == Piece::PAWN && sgn(board[pawnPos1]) != color) ||
+        (abs(board[pawnPos2]) == Piece::PAWN && sgn(board[pawnPos2]) != color)) {
+        return true;
+    }
 
     return false;
 }
