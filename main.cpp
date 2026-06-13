@@ -1,8 +1,6 @@
 #include "FenParser.h"
 #include "gameloop.h"
-#include "bitboards/BitboardData.h"
 #include "moveGen/MoveGenerator.h"
-#include "moveGen/MoveLogic.h"
 
 int main() {
     //start2PlayerGame();

@@ -3,6 +3,8 @@
 //
 
 
+#include <chrono>
+
 #include "Board.h"
 #include "FenParser.h"
 #include "../moveGen/Move.h"
@@ -128,10 +130,10 @@ void testPosition5() {
 
 void debugPerft() {
     Board board;
-    std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+    std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     FenParser::parseFen(board, fen);
 
-    int depth = 5;
+    int depth = 6;
 
     unsigned long long nodes = 0;
 
@@ -151,10 +153,20 @@ void debugPerft() {
 
 
 int main() {
-    //debugPerft();
+    /*
+    debugPerft();
+    */
+    auto start = std::chrono::high_resolution_clock::now();
+
     testInitialPosition();
     testPosition2();
     testPosition3();
     testPosition4();
     testPosition5();
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double, std::milli> dauer = end - start;
+
+    std::cout << "Dauer: " << dauer.count() << " ms\n";
 }
