@@ -22,9 +22,9 @@ public:
     static void performMove(Board& board, Move& move);
 
     static void undoLastMove(Board& board);
-
-private:
     static std::vector<Move> _moveHistory;
+private:
+
 
     static void performPromotion(Board& board, const Move& move);
     static void performCastling(Board& board, const Move& move);

@@ -5,8 +5,12 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
+
 #include "Board.h"
 #include "FenParser.h"
+#include "Move.h"
+#include "MoveGenerator.h"
+#include "MoveLogic.h"
 #include "Piece.h"
 
 /* We will use this renderer to draw into this window every frame. */
@@ -19,6 +23,12 @@ static SDL_Texture* chessPieces;
 static int SCREEN_WIDTH = 800;
 static int SCREEN_HEIGHT = 800;
 static Board board;
+static std::vector<Move> currentMoves{};
+static int markedTile = -1;
+static std::vector<int> highlightedTiles;
+static bool gameOver = false;
+static bool blackWon = false;
+static bool whiteWon = false;
 
 void renderPiece(int tile, int color, int type) {
     // Each piece is 377 pixel offset in x and 302 in y
@@ -73,6 +83,52 @@ void renderPiece(int tile, int color, int type) {
     SDL_RenderTexture(renderer, chessPieces, &srcRect, &dstRect);
 }
 
+void markToTile(int toTile) {
+    int row = toTile / 10;
+    int col = toTile % 10;
+
+    int file = col - 1;
+    int rank = row - 2;
+
+    int screenX = file * (SCREEN_WIDTH / 8);
+    int screenY = (7 - rank) * (SCREEN_HEIGHT / 8);
+
+    SDL_FRect dstRect = {
+        (float)screenX,
+        (float)screenY,
+        (float)SCREEN_WIDTH / 8,
+        (float)SCREEN_HEIGHT / 8
+    };
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 180);
+    SDL_RenderFillRect(renderer, &dstRect);
+}
+
+int getTileFromMousePos(int x, int y) {
+    int row = 8 - (y / (SCREEN_HEIGHT / 8));
+    int col = (x / (SCREEN_WIDTH / 8)) + 1;
+
+    SDL_Log("Row: %d  Col: %d", row, col);
+
+    int tile = ((row + 1) * 10) + col;
+
+    SDL_Log("Tile %d", tile);
+    return tile;
+}
+
+void renderGameStatus() {
+    SDL_Log("Rendering Game Status");
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_SetRenderScale(renderer, 4.0, 4.0);
+    if (whiteWon) {
+        SDL_RenderDebugText(renderer, 75, 50, "White won!");
+    }
+    else {
+        SDL_RenderDebugText(renderer, 75, 50, "Black won!");
+    }
+
+
+}
+
 /* This function runs once at startup. */
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
@@ -82,8 +138,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     char* chessPieces_path = nullptr;
 
 
-    std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    std::string fen = "rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq g3 0 1";
     FenParser::parseFen(board, fen);
+
+    currentMoves = MoveGenerator::generateLegalMoves(board);
 
     SDL_SetAppMetadata("Better Chess", "1.0", "com.betterchess");
 
@@ -92,11 +150,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("Better Chess", SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Better Chess", SCREEN_WIDTH, SCREEN_HEIGHT, 0, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
     SDL_SetRenderLogicalPresentation(renderer, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+
 
     SDL_asprintf(&chessboard_path, "%sassets/chessboard.png", SDL_GetBasePath());
     SDL_asprintf(&chessPieces_path, "%sassets/chesspieces.png", SDL_GetBasePath());
@@ -146,6 +207,63 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     if (event->type == SDL_EVENT_QUIT) {
         return SDL_APP_SUCCESS;  /* end the program, reporting success to the OS. */
     }
+
+    if (event->type == SDL_EVENT_KEY_DOWN) {
+        if (event->key.key == SDLK_Z) {
+            if (!MoveLogic::_moveHistory.empty()) {
+                MoveLogic::undoLastMove(board);
+                currentMoves = MoveGenerator::generateLegalMoves(board);
+            }
+            if (gameOver) {
+                gameOver = whiteWon = blackWon = false;
+            }
+
+        }
+    }
+
+    if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+        if (event->button.button == SDL_BUTTON_LEFT) {
+            SDL_Log("Linke Maustaste gedrückt!");
+
+            // Mausposition:
+            float x = event->button.x;
+            float y = event->button.y;
+
+            SDL_Log("Position: %.0f, %.0f", x, y);
+
+            int clickedTile = getTileFromMousePos((int)x, (int)y);
+            highlightedTiles.clear();
+
+            for (Move& move : currentMoves) {
+                if (move.from == clickedTile) {
+                    SDL_Log("Found Move in List");
+                    highlightedTiles.push_back(move.to);
+
+                }
+                if (move.from == markedTile && move.to == clickedTile) {
+                    SDL_Log("Performing Move");
+                    MoveLogic::performMove(board, move);
+                    currentMoves = MoveGenerator::generateLegalMoves(board);
+
+                    if (currentMoves.empty()) {
+                        // Render Text for winning Game
+                        gameOver = true;
+                        if (board.getTurnToMove() == Piece::WHITE) {
+                            blackWon = true;
+                        }
+                        else {
+                            whiteWon = true;
+                        }
+                    }
+
+                }
+            }
+
+            markedTile = clickedTile;
+
+        }
+    }
+
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }
 
@@ -160,16 +278,33 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     SDL_RenderTexture(renderer, chessboard, NULL, NULL);
 
+    for (int tile : highlightedTiles) {
+        markToTile(tile);
+    }
+
+
+
     // Render every Piece on board
     auto whitePieces = board.getPieceList(Piece::WHITE);
     auto blackPieces = board.getPieceList(Piece::BLACK);
 
     for (Piece& piece : whitePieces) {
-        renderPiece(piece.getPosition(), piece.getColor(), piece.getType());
+        if (piece.isAlive()) {
+            renderPiece(piece.getPosition(), piece.getColor(), piece.getType());
+        }
+
     }
 
     for (Piece& piece : blackPieces) {
-        renderPiece(piece.getPosition(), piece.getColor(), piece.getType());
+        if (piece.isAlive()) {
+            renderPiece(piece.getPosition(), piece.getColor(), piece.getType());
+        }
+
+    }
+
+    if (gameOver) {
+        renderGameStatus();
+        SDL_SetRenderScale(renderer, 1.0, 1.0);
     }
 
     SDL_RenderPresent(renderer);
