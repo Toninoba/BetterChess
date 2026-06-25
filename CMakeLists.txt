@@ -50,10 +50,14 @@ add_executable(BetterChess
         main.cpp
         gameloop.cpp
         gameloop.h
+        bots/FirstBot.cpp
+        bots/FirstBot.h
 )
 
 add_executable(BetterChessGUI
         BetterChessGUI.cpp
+        bots/FirstBot.cpp
+        bots/FirstBot.h
 )
 
 

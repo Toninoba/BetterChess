@@ -12,6 +12,7 @@
 #include "MoveGenerator.h"
 #include "MoveLogic.h"
 #include "Piece.h"
+#include "bots/FirstBot.h"
 
 /* We will use this renderer to draw into this window every frame. */
 static SDL_Window *window = NULL;
@@ -29,6 +30,7 @@ static std::vector<int> highlightedTiles;
 static bool gameOver = false;
 static bool blackWon = false;
 static bool whiteWon = false;
+static bool isBotGame = false;
 
 void renderPiece(int tile, int color, int type) {
     // Each piece is 377 pixel offset in x and 302 in y
@@ -137,8 +139,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     char* chessboard_path = nullptr;
     char* chessPieces_path = nullptr;
 
+    isBotGame = true;
 
-    std::string fen = "rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq g3 0 1";
+
+    std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     FenParser::parseFen(board, fen);
 
     currentMoves = MoveGenerator::generateLegalMoves(board);
@@ -244,6 +248,26 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
                     SDL_Log("Performing Move");
                     MoveLogic::performMove(board, move);
                     currentMoves = MoveGenerator::generateLegalMoves(board);
+
+                    if (currentMoves.empty()) {
+                        // Render Text for winning Game
+                        gameOver = true;
+                        if (board.getTurnToMove() == Piece::WHITE) {
+                            blackWon = true;
+                        }
+                        else {
+                            whiteWon = true;
+                        }
+                    }
+
+                    // Perform Bot Move
+                    Move botMove = FirstBot::getBestMove(board);
+                    if (botMove.from != -1) {
+                        MoveLogic::performMove(board, botMove);
+                        currentMoves = MoveGenerator::generateLegalMoves(board);
+                    }
+
+
 
                     if (currentMoves.empty()) {
                         // Render Text for winning Game
