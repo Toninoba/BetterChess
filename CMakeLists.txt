@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 3.31.6)
 project(BetterChess)
 
 # set the output directory for built objects.
@@ -50,14 +50,14 @@ add_executable(BetterChess
         main.cpp
         gameloop.cpp
         gameloop.h
-        bots/FirstBot.cpp
-        bots/FirstBot.h
+        bots/ChessBot.cpp
+        bots/ChessBot.h
 )
 
 add_executable(BetterChessGUI
         BetterChessGUI.cpp
-        bots/FirstBot.cpp
-        bots/FirstBot.h
+        bots/ChessBot.cpp
+        bots/ChessBot.h
 )
 
 

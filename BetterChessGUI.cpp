@@ -12,7 +12,7 @@
 #include "MoveGenerator.h"
 #include "MoveLogic.h"
 #include "Piece.h"
-#include "bots/FirstBot.h"
+#include "bots/ChessBot.h"
 
 /* We will use this renderer to draw into this window every frame. */
 static SDL_Window *window = NULL;
@@ -24,6 +24,7 @@ static SDL_Texture* chessPieces;
 static int SCREEN_WIDTH = 800;
 static int SCREEN_HEIGHT = 800;
 static Board board;
+static std::optional<ChessBot> bot;
 static std::vector<Move> currentMoves{};
 static int markedTile = -1;
 static std::vector<int> highlightedTiles;
@@ -145,6 +146,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     FenParser::parseFen(board, fen);
 
+    bot.emplace(board, 2);
+
     currentMoves = MoveGenerator::generateLegalMoves(board);
 
     SDL_SetAppMetadata("Better Chess", "1.0", "com.betterchess");
@@ -261,7 +264,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
                     }
 
                     // Perform Bot Move
-                    Move botMove = FirstBot::getBestMove(board);
+                    Move botMove = bot->getBestMove();
+                    SDL_Log("from: %d, to: %d", botMove.from, botMove.to);
                     if (botMove.from != -1) {
                         MoveLogic::performMove(board, botMove);
                         currentMoves = MoveGenerator::generateLegalMoves(board);
